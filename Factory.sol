@@ -9,7 +9,7 @@ contract Factory{
         string restaurantName;
         address restaurantAddress;
         uint[] reviewsList;
-        mapping (uint => Review) reviewStruct;
+        mapping (uint => Review) keyToReview;
         bool exist;
         
     }
@@ -46,6 +46,7 @@ contract Factory{
     event TokenAdded(bytes32 tokenHash);
     event RestaurantAdded(string restaurantName, address senderAddress);
     event UserAdded(string userName, address userAddress);
+    event ReviewSubmitted(address userAddress, address restaurantAddress, string reviewContent);
     
     
     modifier onlyRestaurant() {
@@ -66,18 +67,6 @@ contract Factory{
         newRestaurant.exist = true;
         addressToRestaurant[_senderAddress] = newRestaurant;
         emit RestaurantAdded(_restaurantName, _senderAddress);
-    }
-
-    function _createReview (string memory _reviewContent, string memory _writer) internal pure returns (Review memory) {
-        Review memory review = Review(_reviewContent, _writer);
-        return review;
-    }
-
-    function _addReviewToRestaurant(Review memory _review, address _restAddress) internal {
-        Restaurant storage restaurant = addressToRestaurant[_restAddress];
-        uint reviewIndex = restaurant.reviewsList.push(0) -1;
-        restaurant.reviewStruct[reviewIndex] = _review;
-
     }
 
     function _createReservationToken(string memory _restaurantName, address _restaurantAddress, uint256 _dateTime, uint _tableNo) private pure returns (ReservationToken memory) {
@@ -126,9 +115,9 @@ contract Factory{
         return (tokenHash);
     }
     
-    function testRetrieveRestaurant() public view returns (string memory, address) {
+    function testRetrieveRestaurant() public view returns (string memory, address, bool) {
         Restaurant memory restaurant = addressToRestaurant[msg.sender];
-        return (restaurant.restaurantName, restaurant.restaurantAddress);
+        return (restaurant.restaurantName, restaurant.restaurantAddress, restaurant.exist);
     }
     
     function testRetrieveReservation(uint256 _dateTime, uint _tableNo) public view returns (string memory, address, uint256, uint, address, bool, bool, bytes32) {

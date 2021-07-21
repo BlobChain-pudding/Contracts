@@ -24,17 +24,17 @@ contract ReservationTokenFunctions is Factory, ERC721 {
         user.outstandingReservations++;
     }
 
-    function _removeUserToken(address _userAddress, address _restaurantAddress, bytes32 _tokenHash) private {
+    function _removeUserToken(address _restaurantAddress, bytes32 _tokenHash) private {
         ReservationToken storage token = hashToToken[_tokenHash];
         token.ownerAddress = _restaurantAddress;
     }
 
     function _transfer(address _from, address _to, bytes32 _tokenHash) private {
-        if (addressToUser[_to].exist == true) {
+        if (addressToRestaurant[_from].exist == true) {
             _giveUserToken(_to, _tokenHash);
         }
         else if (addressToRestaurant[_to].exist == true) {
-            _removeUserToken(_from, _to, _tokenHash);
+            _removeUserToken( _to, _tokenHash);
         } 
         else {
             revert();
@@ -50,7 +50,7 @@ contract ReservationTokenFunctions is Factory, ERC721 {
 
     function _handleTokenSubmitReview(bytes32 _reservationHash) internal {
         ReservationToken memory token = hashToToken[_reservationHash];
-        _transfer[msg.sender, token.restaurantAddress, _reservationHash];
+        _transfer(msg.sender, token.restaurantAddress, _reservationHash);
     }
 
     function acceptReservation(bytes32 _reservationHash, address _userAddress) public onlyRestaurant() {
