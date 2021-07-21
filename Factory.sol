@@ -27,14 +27,16 @@ contract Factory{
         uint tableNo;
         address ownerAddress;
         bool exist;
+        bool visited;
     }
     
     struct User {
         string userName;
         address userAddress;
-        uint256 userTokenCount;
+        uint256 outstandingReservations;
         bool exist;
     }
+
 
     mapping (bytes32 => ReservationToken) public hashToToken;
     mapping (address => Restaurant) public addressToRestaurant;
@@ -78,18 +80,18 @@ contract Factory{
 
     }
 
-    function _createReservationToken(string memory _restaurantName, address _restaurantAddress, uint256 _dateTime, uint _tableNo) internal pure returns (ReservationToken memory) {
-        ReservationToken memory token = ReservationToken(_restaurantName, _restaurantAddress, _dateTime, _tableNo, _restaurantAddress, true);
+    function _createReservationToken(string memory _restaurantName, address _restaurantAddress, uint256 _dateTime, uint _tableNo) private pure returns (ReservationToken memory) {
+        ReservationToken memory token = ReservationToken(_restaurantName, _restaurantAddress, _dateTime, _tableNo, _restaurantAddress, true, false);
         return token;
     }
 
-    function _addToken(ReservationToken memory _reservationToken, bytes32 _tokenHash) internal {
+    function _addToken(ReservationToken memory _reservationToken, bytes32 _tokenHash) private {
         require(hashToToken[_tokenHash].exist == false);
         hashToToken[_tokenHash] = _reservationToken;
         emit TokenAdded(_tokenHash);
     }
     
-    function _addUser(string memory _userName, address _userAddress) internal {
+    function _addUser(string memory _userName, address _userAddress) private {
         User memory newUser;
         newUser.userName = _userName;
         newUser.userAddress = _userAddress;
@@ -129,17 +131,17 @@ contract Factory{
         return (restaurant.restaurantName, restaurant.restaurantAddress);
     }
     
-    function testRetrieveReservation(uint256 _dateTime, uint _tableNo) public view returns (string memory, address, uint256, uint, bytes32) {
+    function testRetrieveReservation(uint256 _dateTime, uint _tableNo) public view returns (string memory, address, uint256, uint, address, bool, bool, bytes32) {
         Restaurant memory restaurant = addressToRestaurant[msg.sender];
         string memory restaurantName = restaurant.restaurantName;
         bytes32 tokenHash = keccak256(abi.encode(restaurantName, msg.sender, _dateTime, _tableNo));
         if (hashToToken[tokenHash].exist == false) {
             string memory result = "False";
-            return (result, msg.sender, 0 , 0, tokenHash);
+            return (result, msg.sender, 0 , 0, msg.sender, false, false, tokenHash);
         }
         else {
             ReservationToken memory token = hashToToken[tokenHash];
-            return (token.restaurantName, token.restaurantAddress, token.dateTime, token.tableNo, tokenHash);
+            return (token.restaurantName, token.restaurantAddress, token.dateTime, token.tableNo, token.ownerAddress, token.exist, token.visited, tokenHash);
         }
         
     }

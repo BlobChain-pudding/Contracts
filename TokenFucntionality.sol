@@ -5,13 +5,10 @@ import "./Factory.sol";
 
 contract ReservationTokenFunctions is Factory, ERC721 {
 
-
-
-
     function balanceOf(address _userAddress) public view returns (uint256) {
         User memory user = addressToUser[_userAddress];
-        uint256 tokenCount = user.userTokenCount;
-        return tokenCount;
+        uint256 outstandingReservations = user.outstandingReservations;
+        return outstandingReservations;
     }
 
     function ownerOf(bytes32 _tokenId) public view returns (address) {
@@ -24,14 +21,12 @@ contract ReservationTokenFunctions is Factory, ERC721 {
         ReservationToken storage token = hashToToken[_tokenHash];
         token.ownerAddress = _userAddress;
         User storage user = addressToUser[_userAddress];
-        user.userTokenCount++;
+        user.outstandingReservations++;
     }
 
     function _removeUserToken(address _userAddress, address _restaurantAddress, bytes32 _tokenHash) private {
         ReservationToken storage token = hashToToken[_tokenHash];
         token.ownerAddress = _restaurantAddress;
-        User storage user = addressToUser[_userAddress];
-        user.userTokenCount--;
     }
 
     function _transfer(address _from, address _to, bytes32 _tokenHash) private {
@@ -46,6 +41,18 @@ contract ReservationTokenFunctions is Factory, ERC721 {
         }
     }
 
+    function _generateProofOfVisitation(bytes32 _reservationHash) private {
+        ReservationToken storage token = hashToToken[_reservationHash];
+        token.visited = true;
+        User storage user = addressToUser[token.ownerAddress];
+        user.outstandingReservations --;
+    }
+
+    function _handleTokenSubmitReview(bytes32 _reservationHash) internal {
+        ReservationToken memory token = hashToToken[_reservationHash];
+        _transfer[msg.sender, token.restaurantAddress, _reservationHash];
+    }
+
     function acceptReservation(bytes32 _reservationHash, address _userAddress) public onlyRestaurant() {
         require(hashToToken[_reservationHash].exist == true); //check that reservation token exist
         require(addressToUser[_userAddress].exist == true); //check that user exist
@@ -58,8 +65,10 @@ contract ReservationTokenFunctions is Factory, ERC721 {
         require(addressToUser[_userAddress].exist == true); //check that user exist
         require(hashToToken[_reservationHash].ownerAddress == _userAddress); //check that user currently owns token
         require(hashToToken[_reservationHash].restaurantAddress == msg.sender); //check that calling restaurant created this token
-        _transfer(_userAddress, msg.sender, _reservationHash);
+        _generateProofOfVisitation(_reservationHash);
     }
+
+    
 
     
     
@@ -68,8 +77,8 @@ contract ReservationTokenFunctions is Factory, ERC721 {
         return token.ownerAddress;
     }
     
-    function testPrintUserTokenCount(address _userAddress) public view returns (uint) {
+    function testPrintOutstandingReservations(address _userAddress) public view returns (uint) {
         User memory user = addressToUser[_userAddress];
-        return user.userTokenCount;
+        return user.outstandingReservations;
     }
 }
