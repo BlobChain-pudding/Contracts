@@ -25,6 +25,7 @@ contract Factory{
         address restaurantAddress;
         uint256 dateTime;
         uint tableNo;
+        uint pax;
         address ownerAddress;
         bool exist;
         bool visited;
@@ -34,6 +35,7 @@ contract Factory{
         string userName;
         address userAddress;
         uint256 outstandingReservations;
+        uint256 totalReservations;
         bool exist;
     }
 
@@ -47,6 +49,7 @@ contract Factory{
     event RestaurantAdded(string restaurantName, address senderAddress);
     event UserAdded(string userName, address userAddress);
     event ReviewSubmitted(address userAddress, address restaurantAddress, string reviewContent);
+    event ReturnScore(uint outstanding, uint total);
     
     
     modifier onlyRestaurant() {
@@ -69,8 +72,8 @@ contract Factory{
         emit RestaurantAdded(_restaurantName, _senderAddress);
     }
 
-    function _createReservationToken(string memory _restaurantName, address _restaurantAddress, uint256 _dateTime, uint _tableNo) private pure returns (ReservationToken memory) {
-        ReservationToken memory token = ReservationToken(_restaurantName, _restaurantAddress, _dateTime, _tableNo, _restaurantAddress, true, false);
+    function _createReservationToken(string memory _restaurantName, address _restaurantAddress, uint256 _dateTime, uint _tableNo, uint _pax) private pure returns (ReservationToken memory) {
+        ReservationToken memory token = ReservationToken(_restaurantName, _restaurantAddress, _dateTime, _tableNo, _pax,  _restaurantAddress, true, false);
         return token;
     }
 
@@ -106,10 +109,10 @@ contract Factory{
         return (newRestaurant.restaurantName, newRestaurant.restaurantAddress);
     }
 
-    function createReservation(uint256 _dateTime, uint _tableNo) public onlyRestaurant() returns (bytes32) {
+    function createReservation(uint256 _dateTime, uint _tableNo, uint _pax) public onlyRestaurant() returns (bytes32) {
         Restaurant memory restaurant = addressToRestaurant[msg.sender];
         string memory restaurantName = restaurant.restaurantName;
-        ReservationToken memory reservationToken = _createReservationToken(restaurantName, msg.sender, _dateTime, _tableNo);
+        ReservationToken memory reservationToken = _createReservationToken(restaurantName, msg.sender, _dateTime, _tableNo, _pax);
         bytes32 tokenHash = keccak256(abi.encode(restaurantName, msg.sender, _dateTime, _tableNo));
         _addToken(reservationToken, tokenHash);
         return (tokenHash);
@@ -120,18 +123,19 @@ contract Factory{
         return (restaurant.restaurantName, restaurant.restaurantAddress, restaurant.exist);
     }
     
-    function testRetrieveReservation(uint256 _dateTime, uint _tableNo) public view returns (string memory, address, uint256, uint, address, bool, bool, bytes32) {
+    function testRetrieveReservation(uint256 _dateTime, uint _tableNo) public view returns (string memory, address, uint256, uint, uint, address, bool, bool, bytes32) {
         Restaurant memory restaurant = addressToRestaurant[msg.sender];
         string memory restaurantName = restaurant.restaurantName;
         bytes32 tokenHash = keccak256(abi.encode(restaurantName, msg.sender, _dateTime, _tableNo));
         if (hashToToken[tokenHash].exist == false) {
             string memory result = "False";
-            return (result, msg.sender, 0 , 0, msg.sender, false, false, tokenHash);
+            return (result, msg.sender, 0 , 0,0, msg.sender, false, false, tokenHash);
         }
         else {
             ReservationToken memory token = hashToToken[tokenHash];
-            return (token.restaurantName, token.restaurantAddress, token.dateTime, token.tableNo, token.ownerAddress, token.exist, token.visited, tokenHash);
+            return (token.restaurantName, token.restaurantAddress, token.dateTime, token.tableNo, token.pax, token.ownerAddress, token.exist, token.visited, tokenHash);
         }
+        
         
     }
 

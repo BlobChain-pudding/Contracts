@@ -22,6 +22,7 @@ contract ReservationTokenFunctions is Factory, ERC721 {
         token.ownerAddress = _userAddress;
         User storage user = addressToUser[_userAddress];
         user.outstandingReservations++;
+        user.totalReservations++;
     }
 
     function _removeUserToken(address _restaurantAddress, bytes32 _tokenHash) private {
@@ -48,9 +49,9 @@ contract ReservationTokenFunctions is Factory, ERC721 {
         user.outstandingReservations --;
     }
 
-    function _handleTokenSubmitReview(bytes32 _reservationHash) internal {
+    function _handleTokenSubmitReview(bytes32 _reservationHash, address _userAddress) internal {
         ReservationToken memory token = hashToToken[_reservationHash];
-        _transfer(msg.sender, token.restaurantAddress, _reservationHash);
+        _transfer(_userAddress, token.restaurantAddress, _reservationHash);
     }
 
     function acceptReservation(bytes32 _reservationHash, address _userAddress) public onlyRestaurant() {
@@ -66,6 +67,14 @@ contract ReservationTokenFunctions is Factory, ERC721 {
         require(hashToToken[_reservationHash].ownerAddress == _userAddress); //check that user currently owns token
         require(hashToToken[_reservationHash].restaurantAddress == msg.sender); //check that calling restaurant created this token
         _generateProofOfVisitation(_reservationHash);
+    }
+
+    function getUserScore(address _userAddress) public view returns(uint, uint) {
+        require(addressToUser[_userAddress].exist == true);
+        User memory user = addressToUser[_userAddress];
+        uint total = user.totalReservations;
+        uint outstanding = user.outstandingReservations;
+        return (outstanding, total);
     }
 
     

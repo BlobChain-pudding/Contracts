@@ -28,7 +28,8 @@ contract ReviewFunctions is ReservationTokenFunctions {
         Review memory review = _createReview(_reviewContent, _writer);
         ReservationToken memory token = hashToToken[_reservationHash];
         _addReviewToRestaurant(review, token.restaurantAddress);
-        _handleTokenSubmitReview;
+        address userAddress = msg.sender;
+        _handleTokenSubmitReview(_reservationHash, userAddress);
         emit ReviewSubmitted(msg.sender, token.restaurantAddress, review.reviewContent);
     }
 
