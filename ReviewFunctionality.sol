@@ -3,8 +3,8 @@ import "./TokenFunctionality.sol";
 
 contract ReviewFunctions is ReservationTokenFunctions {
 
-    function _createReview (string memory _reviewContent, string memory _writer) private pure returns (Review memory) {
-        Review memory review = Review(_reviewContent, _writer);
+    function _createReview (string memory _reviewContent, string memory _writer, bytes32 _reservationHash) private pure returns (Review memory) {
+        Review memory review = Review(_reviewContent, _writer, _reservationHash);
         return review;
     }
 
@@ -25,7 +25,7 @@ contract ReviewFunctions is ReservationTokenFunctions {
 
     function postReview(string memory _reviewContent, string memory _writer, bytes32 _reservationHash) public onlyUser {
         _checkUserProof(_reservationHash);
-        Review memory review = _createReview(_reviewContent, _writer);
+        Review memory review = _createReview(_reviewContent, _writer, _reservationHash);
         ReservationToken memory token = hashToToken[_reservationHash];
         _addReviewToRestaurant(review, token.restaurantAddress);
         address userAddress = msg.sender;

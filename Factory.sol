@@ -19,6 +19,7 @@ contract Factory{
     struct Review {
         string reviewContent;
         string writer;
+        bytes32 tokenHash;
     }
 
     struct ReservationToken {
@@ -135,46 +136,11 @@ contract Factory{
         return reservationList;
     }
     
-   function getRestaurantReservationsAccepted(address _restaurantAddress) public view returns (bytes32[] memory) {
-        Restaurant memory restaurant = addressToRestaurant[_restaurantAddress];
-        bytes32[] memory reservationList = restaurant.reservationHashs;
-        bytes32[] memory returnList;
-        uint counter = 0;
-        for (uint i = 0; i<reservationList.length; i++) {
-            ReservationToken memory token = hashToToken[reservationList[i]];
-            if (token.accepted == true) {
-                returnList[counter] = reservationList[i];
-                counter++;
-            }
-        }
-        return returnList;
-    }
-    
-   function getRestaurantReservationsUnaccepted(address _restaurantAddress) public view returns (bytes32[] memory) {
-        Restaurant memory restaurant = addressToRestaurant[_restaurantAddress];
-        bytes32[] memory reservationList = restaurant.reservationHashs;
-        bytes32[] memory returnList;
-        uint counter = 0;
-        for (uint i = 0; i<reservationList.length; i++) {
-            ReservationToken memory token = hashToToken[reservationList[i]];
-            if (token.accepted == false) {
-                returnList[counter] = reservationList[i];
-                counter++;
-            }
-        }
-        return returnList;
-    }
-    
-    function testRetrieveRestaurant(address _restaurantAddress) public view returns (string memory, address, bool, uint[] memory) {
+
+    function retrieveRestaurant(address _restaurantAddress) public view returns (string memory, address, bool, uint[] memory) {
         Restaurant memory restaurant = addressToRestaurant[_restaurantAddress];
         return (restaurant.restaurantName, restaurant.restaurantAddress, restaurant.exist, restaurant.reviewsList);
     }
     
-    function testRetrieveReservation(bytes32 _tokenHash) public view returns (string memory,address, uint256, uint, uint, address, bool, bool, bool) {
-        ReservationToken memory token = hashToToken[_tokenHash];
-        return (token.restaurantName, token.restaurantAddress, token.dateTime, token.tableNo, token.pax, token.ownerAddress, token.visited, token.accepted, token.exist);
-    }
-    
-
 
 }
