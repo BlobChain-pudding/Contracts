@@ -165,9 +165,9 @@ contract Factory{
         return returnList;
     }
     
-    function testRetrieveRestaurant() public view returns (string memory, address, bool) {
-        Restaurant memory restaurant = addressToRestaurant[msg.sender];
-        return (restaurant.restaurantName, restaurant.restaurantAddress, restaurant.exist);
+    function testRetrieveRestaurant(address _restaurantAddress) public view returns (string memory, address, bool, uint[] memory) {
+        Restaurant memory restaurant = addressToRestaurant[_restaurantAddress];
+        return (restaurant.restaurantName, restaurant.restaurantAddress, restaurant.exist, restaurant.reviewsList);
     }
     
     function testRetrieveReservation(bytes32 _tokenHash) public view returns (string memory,address, uint256, uint, uint, address, bool, bool, bool) {
