@@ -33,14 +33,14 @@ contract ReviewFunctions is ReservationTokenFunctions {
         emit ReviewSubmitted(msg.sender, token.restaurantAddress, review.reviewContent);
     }
 
-    function retrieveReview(address _restaurantAddress, uint _retrievalIndex) public view returns (string memory, string memory) {
+    function retrieveReview(address _restaurantAddress, uint _retrievalIndex) public view returns (string memory, string memory, bytes32) {
         require(addressToRestaurant[_restaurantAddress].exist == true);
         Restaurant storage restaurant = addressToRestaurant[_restaurantAddress];
         uint reviewLength = restaurant.reviewsList.length;
         uint reviewIndex = reviewLength - _retrievalIndex -1;
         require(reviewIndex >=0);
         Review memory review = restaurant.keyToReview[reviewIndex];
-        return (review.reviewContent, review.writer);
+        return (review.reviewContent, review.writer, review.tokenHash);
     }
 
 }
