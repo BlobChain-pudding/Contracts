@@ -1,9 +1,8 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/token/ERC721/ERC721.sol";
 import "./Factory.sol";
 
-contract ReservationTokenFunctions is Factory, ERC721 {
+contract ReservationTokenFunctions is Factory{
 
     function balanceOf(address _userAddress) public view returns (uint256) {
         User memory user = addressToUser[_userAddress];
